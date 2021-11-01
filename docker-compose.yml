@@ -1,0 +1,73 @@
+version: '3.3'
+
+services:
+
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.5
+    container_name: "reverse-proxy"
+    # Enables the web UI and tells Traefik to listen to docker
+    command: 
+      # Acceso al WEB UI sin SSL.
+      - "--api.insecure=true" 
+      - "--providers.docker"
+      # Impide que cualquier servicio sea registrado en traefik
+      - "--providers.docker.exposedbydefault=false"
+      # Define el puerto en el cual se presta el servicio web.
+      - "--entrypoints.web.address=:80"
+      ## Para habilitar TLS con certificado SSL de Let's Encrypt.
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=rafasb.varios@gmail.com"
+      # Fichero almacen de certificados
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      # - "--log.level=DEBUG"
+    ports:
+      # The HTTP port
+      - "80:80"
+      # Puerto HTTPS
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # Almacen de certificados
+      - "./.datos/letsencrypt:/letsencrypt"
+
+  db-wp:
+    image: mysql:5.7
+    volumes:
+      - type: bind
+        source: .datos/mysql-wp
+        target: /var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'cambiapassderoot'
+      MYSQL_DATABASE: 'wordpress'
+      MYSQL_USER: 'wordpress'
+      MYSQL_PASSWORD: 'wordpress'
+
+  wordpress:
+    depends_on:
+      - db-wp
+    image: wordpress:latest
+    volumes:
+      - type: bind
+        source: .datos/wordpress
+        target: /var/www/html
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db-wp:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+
+    labels:
+      # Incorporado para dar de alta el servicio en traefik
+      - "traefik.http.routers.wordpress.rule=Host(`test.santisteban.link`)"
+      # Dado que está deshabilitado el alta por defecto se incluye para que se registre el servicio
+      - "traefik.enable=true"
+      - "traefik.http.routers.wordpress.entrypoints=websecure"
+      - "traefik.http.routers.wordpress.tls.certresolver=myresolver"
