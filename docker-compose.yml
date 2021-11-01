@@ -19,7 +19,8 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
       #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
-      - "--certificatesresolvers.myresolver.acme.email=rafasb.varios@gmail.com"
+      ### CAMBIA tu.correo@example.com POR TU EMAIL
+      - "--certificatesresolvers.myresolver.acme.email=tu.correo@example.com"
       # Fichero almacen de certificados
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       # - "--log.level=DEBUG"
@@ -66,7 +67,8 @@ services:
 
     labels:
       # Incorporado para dar de alta el servicio en traefik
-      - "traefik.http.routers.wordpress.rule=Host(`test.santisteban.link`)"
+      ### CAMBIA test.example.com POR UN FQDN CORRECTO
+      - "traefik.http.routers.wordpress.rule=Host(`test.example.com`)"
       # Dado que está deshabilitado el alta por defecto se incluye para que se registre el servicio
       - "traefik.enable=true"
       - "traefik.http.routers.wordpress.entrypoints=websecure"

@@ -22,7 +22,13 @@ Asegurate de:
 
 2) Cambiar el directorio con `cd wordpress-traefik-docker`
 
-3) Ejecutar `docker-compose up -d`
+3) Edita el fichero docker-compose.yml para establecer los valores correctos de:
+
+* Tú correo electrónico en lugar de *tu.correo@example.com*
+
+* Tú nombre de dominio público (FQDN) en lugar de *test.example.com*
+
+4) Ejecutar `docker-compose up -d`
 
 ## Tras el arranque
 
